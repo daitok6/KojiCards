@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s | KojiCards",
   },
   description:
-    "Browse rare and premium trading cards from KojiCards — Pokémon, Magic: The Gathering, Yu-Gi-Oh!, and more.",
+    "Browse rare and premium trading cards from KojiCards — Pokémon, One Piece TCG, and more. Hand-verified, individually sourced.",
   openGraph: {
     siteName: "KojiCards",
     type: "website",

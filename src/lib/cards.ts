@@ -1,5 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import type { CardFilters } from "@/types";
+import type { Card, CardFilters } from "@/types";
+
+// Prisma returns price as Decimal — convert to plain number so it can cross
+// the Server→Client component boundary.
+function serialize(card: Record<string, unknown>): Card {
+  return { ...card, price: card.price !== null && card.price !== undefined ? Number(card.price) : null } as Card;
+}
 
 export async function getCards(filters: CardFilters = {}) {
   const { query, game, set, rarity, minPrice, maxPrice } = filters;
@@ -28,7 +34,7 @@ export async function getCards(filters: CardFilters = {}) {
         : {}),
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-  });
+  }).then((cards) => cards.map(serialize));
 }
 
 export async function getFeaturedCards() {
@@ -36,14 +42,14 @@ export async function getFeaturedCards() {
     where: { featured: true },
     orderBy: { createdAt: "desc" },
     take: 6,
-  });
+  }).then((cards) => cards.map(serialize));
 }
 
 export async function getCard(id: string) {
   return prisma.card.findUnique({
     where: { id },
     include: { media: { orderBy: { position: "asc" } } },
-  });
+  }).then((card) => (card ? serialize(card as unknown as Record<string, unknown>) : null));
 }
 
 export async function getFilterOptions() {

@@ -38,7 +38,7 @@ export default async function HomePage() {
 
         <div className="relative z-10 max-w-4xl mx-auto">
           <p className="text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">
-            Premium Trading Cards
+            Pokémon · One Piece TCG
           </p>
           <h1
             className="text-5xl sm:text-7xl font-black tracking-tight mb-6"
@@ -49,18 +49,18 @@ export default async function HomePage() {
               lineHeight: 1.1,
             }}
           >
-            Collect the<br />Extraordinary
+            Cards Worth<br />Collecting
           </h1>
           <p className="text-white/50 text-lg sm:text-xl max-w-xl mx-auto mb-10">
-            Rare, holographic, and ultra-premium trading cards — individually sourced
-            and hand-verified by KojiCards.
+            Holo rares, secret rares, and sought-after singles — every card
+            hand-inspected and condition-graded by KojiCards.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/cards" className="btn-primary text-base px-8 py-3">
               Browse Catalog
             </Link>
             <Link href="/contact" className="btn-ghost text-base px-8 py-3">
-              Contact Vendor
+              Ask About a Card
             </Link>
           </div>
         </div>
@@ -106,9 +106,6 @@ export default async function HomePage() {
           >
             <p className="text-6xl mb-4">🃏</p>
             <p className="text-white/40 text-lg">No cards added yet.</p>
-            <Link href="/login" className="btn-primary mt-6">
-              Admin Login
-            </Link>
           </div>
         </section>
       )}
@@ -117,9 +114,9 @@ export default async function HomePage() {
       <section className="py-20 px-4 border-t border-white/5">
         <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-8 text-center">
           {[
-            { icon: "✨", title: "Hand-Verified", desc: "Every card inspected for authenticity and graded for condition." },
-            { icon: "📦", title: "Individual Sourcing", desc: "Rare finds curated from sets, collections, and trade events." },
-            { icon: "📩", title: "Direct Contact", desc: "Talk directly to the vendor — no bots, no middlemen." },
+            { icon: "🔍", title: "Condition-Graded", desc: "Every card is individually inspected — Mint, Near Mint, LP — so you know exactly what you're getting." },
+            { icon: "🃏", title: "Pokémon & One Piece", desc: "Specialist focus on Pokémon and One Piece TCG singles, from Base Set classics to current-set pulls." },
+            { icon: "💬", title: "Ask Before You Buy", desc: "Have a question about a card? Reach out directly — no bots, no ticket queues, just a real answer." },
           ].map(({ icon, title, desc }) => (
             <div key={title} className="p-6 rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
               <span className="text-4xl">{icon}</span>

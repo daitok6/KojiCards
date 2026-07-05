@@ -81,14 +81,14 @@ export function HoloCard({ card, size = "md", linkable = true }: HoloCardProps) 
         border: "1px solid rgba(255,255,255,0.12)",
       }}
     >
-      {/* Card image */}
-      <div className="relative w-full" style={{ height: "65%" }}>
+      {/* Card image — fills the full card */}
+      <div className="absolute inset-0">
         <Image
           src={card.imageUrl}
           alt={card.name}
           fill
           sizes={`${width}px`}
-          className="object-cover"
+          className="object-contain"
           priority={false}
         />
         {/* Holographic foil overlay — only for holo/ultra/secret */}

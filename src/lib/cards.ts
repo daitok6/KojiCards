@@ -1,0 +1,58 @@
+import { prisma } from "@/lib/prisma";
+import type { CardFilters } from "@/types";
+
+export async function getCards(filters: CardFilters = {}) {
+  const { query, game, set, rarity, minPrice, maxPrice } = filters;
+
+  return prisma.card.findMany({
+    where: {
+      ...(query
+        ? {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { game: { contains: query, mode: "insensitive" } },
+              { set: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(game ? { game: { equals: game, mode: "insensitive" } } : {}),
+      ...(set ? { set: { equals: set, mode: "insensitive" } } : {}),
+      ...(rarity ? { rarity: { equals: rarity, mode: "insensitive" } } : {}),
+      ...(minPrice !== undefined || maxPrice !== undefined
+        ? {
+            price: {
+              ...(minPrice !== undefined ? { gte: minPrice } : {}),
+              ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+            },
+          }
+        : {}),
+    },
+    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function getFeaturedCards() {
+  return prisma.card.findMany({
+    where: { featured: true },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+  });
+}
+
+export async function getCard(id: string) {
+  return prisma.card.findUnique({ where: { id } });
+}
+
+export async function getFilterOptions() {
+  const [games, sets, rarities] = await Promise.all([
+    prisma.card.findMany({ select: { game: true }, distinct: ["game"] }),
+    prisma.card.findMany({ select: { set: true }, distinct: ["set"] }),
+    prisma.card.findMany({ select: { rarity: true }, distinct: ["rarity"] }),
+  ]);
+
+  return {
+    games: games.map((c) => c.game),
+    sets: sets.map((c) => c.set),
+    rarities: rarities.map((c) => c.rarity),
+  };
+}

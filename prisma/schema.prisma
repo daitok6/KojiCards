@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Card {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   name      String
   imageUrl  String
   game      String
@@ -16,10 +16,23 @@ model Card {
   rarity    String
   condition String
   price     Decimal?
-  stock     Int      @default(1)
-  featured  Boolean  @default(false)
+  stock     Int         @default(1)
+  featured  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  media     CardMedia[]
+}
+
+model CardMedia {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  url       String
+  type      String   // "image" | "video"
+  position  Int      @default(0)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([cardId])
 }
 
 model User {

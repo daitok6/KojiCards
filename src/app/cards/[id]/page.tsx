@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCard } from "@/lib/cards";
-import { HoloCard } from "@/components/ui/HoloCard";
-import type { Card } from "@/types";
+import { CardGallery } from "@/components/ui/CardGallery";
+import type { Card, CardMedia } from "@/types";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -35,7 +35,11 @@ export default async function CardDetailPage({ params }: PageProps) {
   const card = await getCard(id);
   if (!card) notFound();
 
-  const typedCard = card as unknown as Card;
+  const typedCard = {
+    ...card,
+    price: card.price !== null ? Number(card.price) : null,
+    media: (card.media ?? []) as unknown as CardMedia[],
+  } as Card;
   const condition = CONDITION_LABELS[card.condition] ?? { label: card.condition, color: "text-white/60" };
 
   return (
@@ -45,9 +49,9 @@ export default async function CardDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="flex flex-col lg:flex-row gap-16 items-start">
-        {/* Card display */}
-        <div className="flex-shrink-0 flex justify-center lg:justify-start">
-          <HoloCard card={typedCard} size="lg" linkable={false} />
+        {/* Card gallery (cover holo + optional media thumbnails) */}
+        <div className="flex-shrink-0">
+          <CardGallery card={typedCard} />
         </div>
 
         {/* Card details */}

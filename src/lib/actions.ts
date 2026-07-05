@@ -15,6 +15,29 @@ async function requireAdmin() {
   if (!session?.user) redirect("/login");
 }
 
+interface MediaItem {
+  url: string;
+  type: "image" | "video";
+  position: number;
+}
+
+function parseGalleryMedia(formData: FormData): MediaItem[] {
+  const raw = formData.get("galleryMedia") as string | null;
+  if (!raw) return [];
+  try {
+    const items = JSON.parse(raw);
+    if (!Array.isArray(items)) return [];
+    return items.filter(
+      (item): item is MediaItem =>
+        typeof item.url === "string" &&
+        (item.type === "image" || item.type === "video") &&
+        typeof item.position === "number"
+    );
+  } catch {
+    return [];
+  }
+}
+
 export async function createCard(formData: FormData) {
   await requireAdmin();
 
@@ -28,11 +51,20 @@ export async function createCard(formData: FormData) {
   });
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
+  const galleryMedia = parseGalleryMedia(formData);
+
   await prisma.card.create({
     data: {
       ...parsed.data,
       imageUrl,
       price: parsed.data.price ?? null,
+      media: {
+        create: galleryMedia.map((m) => ({
+          url: m.url,
+          type: m.type,
+          position: m.position,
+        })),
+      },
     },
   });
 
@@ -53,14 +85,36 @@ export async function updateCard(id: string, formData: FormData) {
   });
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
-  await prisma.card.update({
-    where: { id },
-    data: {
-      ...parsed.data,
-      price: parsed.data.price ?? null,
-      ...(imageUrl ? { imageUrl } : {}),
-    },
-  });
+  const galleryMedia = parseGalleryMedia(formData);
+
+  // Get old gallery blobs so we can remove any that are no longer referenced
+  const existingMedia = await prisma.cardMedia.findMany({ where: { cardId: id } });
+  const newUrls = new Set(galleryMedia.map((m) => m.url));
+  const removed = existingMedia.filter((m) => !newUrls.has(m.url));
+
+  await prisma.$transaction([
+    prisma.cardMedia.deleteMany({ where: { cardId: id } }),
+    prisma.card.update({
+      where: { id },
+      data: {
+        ...parsed.data,
+        price: parsed.data.price ?? null,
+        ...(imageUrl ? { imageUrl } : {}),
+        media: {
+          create: galleryMedia.map((m) => ({
+            url: m.url,
+            type: m.type,
+            position: m.position,
+          })),
+        },
+      },
+    }),
+  ]);
+
+  // Clean up removed blobs (non-fatal)
+  for (const m of removed) {
+    try { await del(m.url); } catch { /* continue */ }
+  }
 
   revalidatePath("/");
   revalidatePath("/cards");
@@ -72,15 +126,15 @@ export async function updateCard(id: string, formData: FormData) {
 export async function deleteCard(id: string) {
   await requireAdmin();
 
-  const card = await prisma.card.findUnique({ where: { id } });
+  const card = await prisma.card.findUnique({
+    where: { id },
+    include: { media: true },
+  });
   if (!card) throw new Error("Card not found");
 
-  // Remove image from Vercel Blob
-  try {
-    await del(card.imageUrl);
-  } catch {
-    // Non-fatal: continue with DB delete even if blob removal fails
-  }
+  // Remove all blobs (cover + gallery) — non-fatal individually
+  const blobUrls = [card.imageUrl, ...card.media.map((m) => m.url)];
+  await Promise.allSettled(blobUrls.map((url) => del(url)));
 
   await prisma.card.delete({ where: { id } });
 

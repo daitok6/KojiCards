@@ -40,7 +40,10 @@ export async function getFeaturedCards() {
 }
 
 export async function getCard(id: string) {
-  return prisma.card.findUnique({ where: { id } });
+  return prisma.card.findUnique({
+    where: { id },
+    include: { media: { orderBy: { position: "asc" } } },
+  });
 }
 
 export async function getFilterOptions() {

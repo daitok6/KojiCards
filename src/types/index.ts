@@ -15,6 +15,15 @@ export type CardCondition =
   | "Heavily Played"
   | "Damaged";
 
+export interface CardMedia {
+  id: string;
+  cardId: string;
+  url: string;
+  type: "image" | "video";
+  position: number;
+  createdAt: Date;
+}
+
 export interface Card {
   id: string;
   name: string;
@@ -28,6 +37,7 @@ export interface Card {
   featured: boolean;
   createdAt: Date;
   updatedAt: Date;
+  media?: CardMedia[];
 }
 
 export interface CardFilters {

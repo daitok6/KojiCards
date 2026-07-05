@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { getCards, getFilterOptions } from "@/lib/cards";
 import { HoloCard } from "@/components/ui/HoloCard";
+import { MobileCatalogCard } from "@/components/ui/MobileCatalogCard";
 import { CardFilters } from "@/components/ui/CardFilters";
 import type { Card, CardFilters as Filters } from "@/types";
 import type { Metadata } from "next";
@@ -56,11 +57,20 @@ export default async function CatalogPage({ searchParams }: PageProps) {
 
       {/* Grid */}
       {cards.length > 0 ? (
-        <div className="flex flex-wrap gap-8 justify-start">
-          {(cards as unknown as Card[]).map((card) => (
-            <HoloCard key={card.id} card={card} size="md" />
-          ))}
-        </div>
+        <>
+          {/* Mobile 2-col grid */}
+          <div className="grid grid-cols-2 gap-3 md:hidden">
+            {(cards as unknown as Card[]).map((card) => (
+              <MobileCatalogCard key={card.id} card={card} />
+            ))}
+          </div>
+          {/* Desktop flex */}
+          <div className="hidden md:flex flex-wrap gap-8 justify-start">
+            {(cards as unknown as Card[]).map((card) => (
+              <HoloCard key={card.id} card={card} size="md" />
+            ))}
+          </div>
+        </>
       ) : (
         <div
           className="py-32 text-center rounded-2xl"

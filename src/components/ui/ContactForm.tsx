@@ -1,9 +1,24 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { sendContactEmail } from "@/lib/actions";
 
-export function ContactForm() {
+interface CardContext {
+  id: string;
+  name: string;
+  imageUrl: string;
+  condition: string;
+  price: number | null;
+  set: string;
+  game: string;
+}
+
+interface ContactFormProps {
+  cardContext?: CardContext | null;
+}
+
+export function ContactForm({ cardContext }: ContactFormProps) {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,7 +36,56 @@ export function ContactForm() {
   }
 
   return (
-    <form ref={formRef} action={handleSubmit} className="space-y-5">
+    <form ref={formRef} action={handleSubmit} className="space-y-4">
+      {/* Card context box */}
+      {cardContext && (
+        <div
+          className="flex gap-3 items-center rounded-xl p-3"
+          style={{ border: "1px solid rgba(168,85,247,0.35)", background: "rgba(168,85,247,0.06)" }}
+        >
+          <div
+            className="relative flex-shrink-0 rounded-md overflow-hidden"
+            style={{ width: 38, height: 52, background: "#101018" }}
+          >
+            <Image
+              src={cardContext.imageUrl}
+              alt={cardContext.name}
+              fill
+              className="object-contain"
+              sizes="38px"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold truncate" style={{ fontSize: 12 }}>
+              Asking about: {cardContext.name} — {cardContext.set}
+            </p>
+            <p className="text-white/45" style={{ fontSize: 11 }}>
+              {cardContext.condition}{cardContext.price !== null ? ` · $${cardContext.price.toFixed(0)}` : ""}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden subject when card context is present */}
+      {cardContext ? (
+        <input
+          type="hidden"
+          name="subject"
+          value={`Inquiry: ${cardContext.name} (${cardContext.set})`}
+        />
+      ) : (
+        <div>
+          <label className="block text-sm text-white/50 mb-1.5" htmlFor="subject">Subject</label>
+          <input
+            id="subject"
+            name="subject"
+            type="text"
+            required
+            placeholder="e.g. Inquiry about Charizard PSA 10"
+          />
+        </div>
+      )}
+
       <div>
         <label className="block text-sm text-white/50 mb-1.5" htmlFor="name">Name</label>
         <input id="name" name="name" type="text" required placeholder="Your name" />
@@ -33,18 +97,17 @@ export function ContactForm() {
       </div>
 
       <div>
-        <label className="block text-sm text-white/50 mb-1.5" htmlFor="subject">Subject</label>
-        <input id="subject" name="subject" type="text" required placeholder="e.g. Inquiry about Charizard PSA 10" />
-      </div>
-
-      <div>
         <label className="block text-sm text-white/50 mb-1.5" htmlFor="message">Message</label>
         <textarea
           id="message"
           name="message"
           required
-          rows={5}
-          placeholder="Tell us which card(s) you're interested in, any questions you have, etc."
+          rows={4}
+          placeholder={
+            cardContext
+              ? "Questions, offers, or a request for more photos…"
+              : "Tell us which card(s) you're interested in, any questions you have, etc."
+          }
           style={{ resize: "vertical" }}
         />
       </div>
@@ -52,10 +115,17 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="btn-primary w-full py-3 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="btn-primary w-full disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ padding: "15px", fontSize: 15 }}
       >
-        {status === "sending" ? "Sending…" : "Send Message"}
+        {status === "sending" ? "Sending…" : cardContext ? "Send inquiry" : "Send Message"}
       </button>
+
+      {!cardContext && (
+        <p className="text-center text-white/40" style={{ fontSize: 11.5 }}>
+          You&apos;ll get a reply at your email — no account needed.
+        </p>
+      )}
 
       {status === "success" && (
         <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm">

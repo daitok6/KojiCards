@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCard } from "@/lib/cards";
+import { prisma } from "@/lib/prisma";
 import { CardGallery } from "@/components/ui/CardGallery";
 import type { Card, CardMedia } from "@/types";
 import type { Metadata } from "next";
@@ -32,7 +33,10 @@ const CONDITION_LABELS: Record<string, { label: string; color: string }> = {
 
 export default async function CardDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const card = await getCard(id);
+  const [card, info] = await Promise.all([
+    getCard(id),
+    prisma.vendorInfo.findUnique({ where: { id: "singleton" } }),
+  ]);
   if (!card) notFound();
 
   const typedCard = {
@@ -42,73 +46,142 @@ export default async function CardDetailPage({ params }: PageProps) {
   } as Card;
   const condition = CONDITION_LABELS[card.condition] ?? { label: card.condition, color: "text-white/60" };
 
+  const whatsappNum = info?.whatsapp?.replace(/\D/g, "") ?? "";
+  const whatsappUrl = whatsappNum
+    ? `https://wa.me/${whatsappNum}?text=${encodeURIComponent(`Hi, I'm interested in the ${card.name} listed on KojiCards.`)}`
+    : null;
+
+  const priceDisplay = card.price !== null ? `$${Number(card.price).toFixed(0)}` : null;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <Link href="/cards" className="btn-ghost text-sm mb-10 inline-flex">
-        ← Back to Catalog
-      </Link>
+    <>
+      {/* ── Main content ───────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16 pb-28 md:pb-16">
+        <Link href="/cards" className="btn-ghost text-sm mb-8 md:mb-10 inline-flex">
+          ← Back to Catalog
+        </Link>
 
-      <div className="flex flex-col lg:flex-row gap-16 items-start">
-        {/* Card gallery (cover holo + optional media thumbnails) */}
-        <div className="flex-shrink-0">
-          <CardGallery card={typedCard} />
-        </div>
-
-        {/* Card details */}
-        <div className="flex-1 pt-4">
-          <div className="flex items-start gap-3 flex-wrap mb-2">
-            {card.featured && (
-              <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                ⭐ Featured
-              </span>
-            )}
-            {card.stock === 0 && (
-              <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
-                Out of Stock
-              </span>
-            )}
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+          {/* Card gallery */}
+          <div className="flex-shrink-0 w-full lg:w-auto">
+            <CardGallery card={typedCard} />
           </div>
 
-          <h1 className="text-4xl font-black text-white mb-1">{card.name}</h1>
-          <p className="text-white/40 text-lg mb-8">{card.game} · {card.set}</p>
-
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            {[
-              { label: "Rarity", value: card.rarity },
-              { label: "Condition", value: <span className={condition.color}>{condition.label}</span> },
-              { label: "In Stock", value: card.stock > 0 ? card.stock : "—" },
-              {
-                label: "Price",
-                value: card.price !== null
-                  ? <span className="text-green-400 font-bold text-xl">${Number(card.price).toFixed(2)}</span>
-                  : <span className="text-white/30">Contact for price</span>,
-              },
-            ].map(({ label, value }) => (
-              <div
-                key={label}
-                className="p-4 rounded-xl"
-                style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+          {/* Card details */}
+          <div className="flex-1 pt-0 lg:pt-4">
+            <div className="flex items-start gap-3 flex-wrap mb-3">
+              {card.rarity && (
+                <span
+                  className="text-[10.5px] font-bold px-3 py-1 rounded-full"
+                  style={{
+                    background: "rgba(168,85,247,0.18)",
+                    color: "#d8b4fe",
+                    border: "1px solid rgba(168,85,247,0.3)",
+                  }}
+                >
+                  {card.rarity}
+                </span>
+              )}
+              <span
+                className={`text-[10.5px] font-bold px-3 py-1 rounded-full ${condition.color}`}
+                style={{
+                  background: "rgba(134,239,172,0.1)",
+                  border: "1px solid rgba(134,239,172,0.25)",
+                }}
               >
-                <p className="text-white/30 text-xs uppercase tracking-wider mb-1">{label}</p>
-                <p className="text-white font-semibold">{value}</p>
+                {condition.label}
+              </span>
+              {card.featured && (
+                <span className="text-[10.5px] font-semibold px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  ⭐ Featured
+                </span>
+              )}
+              {card.stock === 0 && (
+                <span className="text-[10.5px] font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                  Out of Stock
+                </span>
+              )}
+            </div>
+
+            <h1 className="text-4xl font-black text-white mb-1">{card.name}</h1>
+            <p className="text-white/40 mb-6" style={{ fontSize: 13.5 }}>
+              {card.game} · {card.set}
+            </p>
+
+            {card.price !== null && (
+              <div className="mb-4">
+                <p className="font-black text-green-400" style={{ fontSize: 32 }}>
+                  {priceDisplay}<span className="text-lg">.00</span>
+                </p>
+                {card.stock > 0 && card.stock <= 3 && (
+                  <p className="text-yellow-400 font-semibold mt-0.5" style={{ fontSize: 12.5 }}>
+                    Only {card.stock} available
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
+            )}
 
-          <p className="text-white/40 text-sm mb-8">
-            Interested? Contact the vendor directly to arrange a purchase — no checkout required.
-          </p>
+            <p className="text-white/40 text-sm mb-8">
+              Photos show the exact copy you&apos;ll receive. Ships insured &amp; tracked · Replies within 24h · No checkout, no fees
+            </p>
 
-          <div className="flex gap-4 flex-wrap">
-            <Link href="/contact" className="btn-primary px-8 py-3">
-              Contact Vendor
-            </Link>
-            <Link href="/cards" className="btn-ghost px-8 py-3">
-              More Cards
-            </Link>
+            {/* Desktop CTA buttons — hidden on mobile (replaced by sticky bar) */}
+            <div className="hidden md:flex gap-4 flex-wrap">
+              <Link
+                href={`/contact?card=${card.id}`}
+                className="btn-primary px-8 py-3"
+              >
+                {priceDisplay ? `Inquire · ${priceDisplay}` : "Inquire About This Card"}
+              </Link>
+              {whatsappUrl && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-ghost px-8 py-3"
+                >
+                  WhatsApp
+                </a>
+              )}
+              <Link href="/cards" className="btn-ghost px-8 py-3">
+                More Cards
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* ── Mobile sticky inquire bar ───────────────────────────────────────── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+        style={{
+          padding: "12px 20px 16px",
+          background: "rgba(10,10,15,0.95)",
+          backdropFilter: "blur(16px)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <div className="flex gap-2.5">
+          <Link
+            href={`/contact?card=${card.id}`}
+            className="btn-primary flex-1"
+            style={{ padding: "14px", fontSize: 14, fontWeight: 700 }}
+          >
+            Inquire{priceDisplay ? ` · ${priceDisplay}` : ""}
+          </Link>
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost"
+              style={{ padding: "14px 18px", fontSize: 14 }}
+            >
+              WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
+    </>
   );
 }

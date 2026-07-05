@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Image from "next/image";
 import { getFeaturedCards, getCards } from "@/lib/cards";
 import { HoloCard } from "@/components/ui/HoloCard";
+import { MobileCatalogCard } from "@/components/ui/MobileCatalogCard";
 import type { Card } from "@/types";
 
 export default async function HomePage() {
@@ -12,16 +14,15 @@ export default async function HomePage() {
   ]);
 
   const showcase = featured.length > 0 ? featured : recent.slice(0, 6);
+  const inStockCount = recent.filter((c) => c.stock > 0).length;
+  const fanCards = showcase.slice(0, 3) as Card[];
 
   return (
     <>
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden min-h-[90vh] flex flex-col items-center justify-center text-center px-4">
-        {/* Ambient background blobs */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden="true"
-        >
+        {/* Ambient blobs */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
           <div
             className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl"
             style={{ background: "radial-gradient(circle, #a855f7, transparent)" }}
@@ -36,7 +37,98 @@ export default async function HomePage() {
           />
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto">
+        {/* ── Mobile hero ───────────────────────────────────────────────── */}
+        <div className="relative z-10 w-full max-w-sm mx-auto md:hidden">
+          <p className="text-purple-400 font-semibold tracking-widest uppercase mb-2.5" style={{ fontSize: 11, letterSpacing: "0.1em" }}>
+            Pokémon · One Piece TCG singles
+          </p>
+          <h1 className="font-black tracking-tight text-white mb-3 leading-[1.12]" style={{ fontSize: 34 }}>
+            Cards worth collecting.
+          </h1>
+          <p className="text-white/50 mx-auto mb-5 leading-relaxed" style={{ fontSize: 15, maxWidth: 300 }}>
+            Every single hand-inspected and condition-graded. A real person answers.
+          </p>
+
+          {/* Fan of 3 cards */}
+          {fanCards.length >= 3 ? (
+            <div className="relative mb-5" style={{ height: 280 }}>
+              {/* Left card – rotated */}
+              <div
+                className="absolute overflow-hidden rounded-xl"
+                style={{
+                  left: 28, top: 34, width: 136, height: 190,
+                  background: "linear-gradient(145deg,#1a1a2e,#16213e)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  transform: "rotate(-9deg)",
+                  boxShadow: "0 16px 32px rgba(0,0,0,0.5)",
+                }}
+              >
+                <Image src={fanCards[1].imageUrl} alt={fanCards[1].name} fill className="object-contain" sizes="136px" />
+              </div>
+              {/* Right card – rotated */}
+              <div
+                className="absolute overflow-hidden rounded-xl"
+                style={{
+                  right: 28, top: 40, width: 136, height: 190,
+                  background: "linear-gradient(145deg,#1a1a2e,#16213e)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  transform: "rotate(9deg)",
+                  boxShadow: "0 16px 32px rgba(0,0,0,0.5)",
+                }}
+              >
+                <Image src={fanCards[2].imageUrl} alt={fanCards[2].name} fill className="object-contain" sizes="136px" />
+              </div>
+              {/* Center card – prominent */}
+              <div
+                className="absolute overflow-hidden rounded-xl"
+                style={{
+                  left: "50%", top: 0, width: 164, height: 230,
+                  transform: "translateX(-50%)",
+                  background: "linear-gradient(145deg,#1a1a2e,#16213e)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  boxShadow: "0 28px 56px rgba(0,0,0,0.7), 0 0 40px rgba(168,85,247,0.18)",
+                }}
+              >
+                <Image src={fanCards[0].imageUrl} alt={fanCards[0].name} fill className="object-contain" sizes="164px" />
+                <div
+                  className="absolute bottom-0 left-0 right-0 flex items-center justify-between"
+                  style={{ padding: "8px 10px", background: "linear-gradient(to top, rgba(0,0,0,0.95), transparent)" }}
+                >
+                  <span className="text-white font-bold truncate" style={{ fontSize: 11 }}>{fanCards[0].name}</span>
+                  {fanCards[0].price !== null && (
+                    <span className="text-green-400 font-extrabold flex-shrink-0 ml-1" style={{ fontSize: 11 }}>
+                      ${Number(fanCards[0].price).toFixed(0)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center mb-5" style={{ height: 200 }}>
+              <div
+                className="flex items-center justify-center text-4xl rounded-xl"
+                style={{ width: 164, height: 180, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)" }}
+              >
+                🃏
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2.5">
+            <Link href="/cards" className="btn-primary" style={{ padding: "15px", fontSize: 15 }}>
+              Browse {inStockCount > 0 ? `${inStockCount} cards in stock` : "catalog"}
+            </Link>
+            <Link href="/contact" className="btn-ghost" style={{ padding: "14px", fontSize: 15 }}>
+              Ask about a card
+            </Link>
+            <p className="mt-1.5 text-center text-white/45" style={{ fontSize: 12 }}>
+              Condition-graded · Ships insured · Replies within 24h
+            </p>
+          </div>
+        </div>
+
+        {/* ── Desktop hero ──────────────────────────────────────────────── */}
+        <div className="relative z-10 max-w-4xl mx-auto hidden md:block">
           <p className="text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">
             Pokémon · One Piece TCG
           </p>
@@ -56,48 +148,55 @@ export default async function HomePage() {
             hand-inspected and condition-graded by KojiCards.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/cards" className="btn-primary text-base px-8 py-3">
-              Browse Catalog
-            </Link>
-            <Link href="/contact" className="btn-ghost text-base px-8 py-3">
-              Ask About a Card
-            </Link>
+            <Link href="/cards" className="btn-primary text-base px-8 py-3">Browse Catalog</Link>
+            <Link href="/contact" className="btn-ghost text-base px-8 py-3">Ask About a Card</Link>
           </div>
         </div>
       </section>
 
       {/* ── Featured / Showcase ───────────────────────────────────────────── */}
       {showcase.length > 0 && (
-        <section className="py-20 px-4">
+        <section className="py-10 md:py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-14">
+            {/* Mobile heading */}
+            <div className="flex items-baseline justify-between mb-3.5 md:hidden">
+              <h2 className="font-extrabold text-white" style={{ fontSize: 19 }}>Featured picks</h2>
+              <Link href="/cards" className="text-purple-400 font-semibold" style={{ fontSize: 13 }}>
+                View all →
+              </Link>
+            </div>
+
+            {/* Desktop heading */}
+            <div className="text-center mb-14 hidden md:block">
               <p className="text-purple-400 text-xs font-semibold tracking-widest uppercase mb-3">
                 {featured.length > 0 ? "Featured Picks" : "Recent Additions"}
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white">
-                Hover to feel the magic
-              </h2>
-              <p className="text-white/40 mt-2">
-                Move your cursor over any card to see the holographic effect
-              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white">Hover to feel the magic</h2>
+              <p className="text-white/40 mt-2">Move your cursor over any card to see the holographic effect</p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8">
+            {/* Mobile 2-col grid */}
+            <div className="grid grid-cols-2 gap-3.5 md:hidden">
+              {(showcase as Card[]).slice(0, 4).map((card) => (
+                <MobileCatalogCard key={card.id} card={card} />
+              ))}
+            </div>
+
+            {/* Desktop flex */}
+            <div className="hidden md:flex flex-wrap justify-center gap-8">
               {(showcase as Card[]).map((card) => (
                 <HoloCard key={card.id} card={card} size="md" />
               ))}
             </div>
 
-            <div className="text-center mt-14">
-              <Link href="/cards" className="btn-primary px-10 py-3 text-base">
-                View All Cards
-              </Link>
+            <div className="text-center mt-14 hidden md:block">
+              <Link href="/cards" className="btn-primary px-10 py-3 text-base">View All Cards</Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* ── No cards yet state ────────────────────────────────────────────── */}
+      {/* No cards state */}
       {showcase.length === 0 && (
         <section className="py-32 text-center px-4">
           <div
@@ -111,19 +210,36 @@ export default async function HomePage() {
       )}
 
       {/* ── Value props ───────────────────────────────────────────────────── */}
-      <section className="py-20 px-4 border-t border-white/5">
-        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-8 text-center">
-          {[
-            { icon: "🔍", title: "Condition-Graded", desc: "Every card is individually inspected — Mint, Near Mint, LP — so you know exactly what you're getting." },
-            { icon: "🃏", title: "Pokémon & One Piece", desc: "Specialist focus on Pokémon and One Piece TCG singles, from Base Set classics to current-set pulls." },
-            { icon: "💬", title: "Ask Before You Buy", desc: "Have a question about a card? Reach out directly — no bots, no ticket queues, just a real answer." },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} className="p-6 rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-              <span className="text-4xl">{icon}</span>
-              <h3 className="text-white font-bold text-lg mt-3 mb-2">{title}</h3>
-              <p className="text-white/40 text-sm">{desc}</p>
-            </div>
-          ))}
+      <section className="py-8 md:py-20 px-4 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          {/* Mobile list */}
+          <div className="md:hidden flex flex-col gap-0">
+            {[
+              { title: "Condition-graded", desc: "Mint to LP, graded under proper lighting." },
+              { title: "Two games, deep focus", desc: "Pokémon and One Piece singles only." },
+              { title: "A real person answers", desc: "Direct line, replies within 24h." },
+            ].map(({ title, desc }) => (
+              <div key={title} className="py-3.5 border-b border-white/[0.06]">
+                <p className="text-white font-bold mb-0.5" style={{ fontSize: 13.5 }}>{title}</p>
+                <p className="text-white/40 leading-relaxed" style={{ fontSize: 12.5 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop cards */}
+          <div className="hidden md:grid sm:grid-cols-3 gap-8 text-center">
+            {[
+              { icon: "🔍", title: "Condition-Graded", desc: "Every card is individually inspected — Mint, Near Mint, LP — so you know exactly what you're getting." },
+              { icon: "🃏", title: "Pokémon & One Piece", desc: "Specialist focus on Pokémon and One Piece TCG singles, from Base Set classics to current-set pulls." },
+              { icon: "💬", title: "Ask Before You Buy", desc: "Have a question about a card? Reach out directly — no bots, no ticket queues, just a real answer." },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="p-6 rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+                <span className="text-4xl">{icon}</span>
+                <h3 className="text-white font-bold text-lg mt-3 mb-2">{title}</h3>
+                <p className="text-white/40 text-sm">{desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { upload } from "@vercel/blob/client";
 import { createCard, updateCard } from "@/lib/actions";
 import type { Card, CardMedia } from "@/types";
 
@@ -16,12 +17,14 @@ interface CardFormProps {
 }
 
 async function uploadFile(file: File): Promise<{ url: string; type: "image" | "video" }> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: form });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? "Upload failed");
-  return { url: data.url, type: data.type as "image" | "video" };
+  const isVideo = file.type.startsWith("video/");
+  const folder = isVideo ? "videos" : "cards";
+  const blob = await upload(`${folder}/${file.name}`, file, {
+    access: "public",
+    handleUploadUrl: "/api/upload",
+    contentType: file.type,
+  });
+  return { url: blob.url, type: isVideo ? "video" : "image" };
 }
 
 export function CardForm({ card }: CardFormProps) {

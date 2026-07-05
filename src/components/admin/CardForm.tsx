@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 import { uploadPresigned } from "@vercel/blob/client";
 import { createCard, updateCard } from "@/lib/actions";
 import type { Card, CardMedia } from "@/types";
@@ -10,7 +9,7 @@ const GAMES = ["Pokémon", "Magic: The Gathering", "Yu-Gi-Oh!", "Dragon Ball Sup
 const RARITIES = ["Common", "Uncommon", "Rare", "Holo Rare", "Ultra Rare", "Secret Rare", "Promo"];
 const CONDITIONS = ["Mint", "Near Mint", "Lightly Played", "Moderately Played", "Heavily Played", "Damaged"];
 
-interface GalleryItem { url: string; type: "image" | "video"; position: number; }
+interface GalleryItem { url: string; previewUrl?: string; type: "image" | "video"; position: number; }
 
 interface CardFormProps {
   card?: Card;
@@ -29,11 +28,23 @@ async function uploadFile(file: File): Promise<{ url: string; type: "image" | "v
 
 export function CardForm({ card }: CardFormProps) {
   const [imageUrl, setImageUrl] = useState(card?.imageUrl ?? "");
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState(card?.imageUrl ?? "");
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverError, setCoverError] = useState("");
   const [gallery, setGallery] = useState<GalleryItem[]>(
-    (card?.media ?? []).map((m: CardMedia) => ({ url: m.url, type: m.type, position: m.position }))
+    (card?.media ?? []).map((m: CardMedia) => ({ url: m.url, previewUrl: m.url, type: m.type, position: m.position }))
   );
+
+  // Revoke object URLs on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (coverPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(coverPreviewUrl);
+      gallery.forEach((item) => {
+        if (item.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(item.previewUrl);
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryError, setGalleryError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +55,12 @@ export function CardForm({ card }: CardFormProps) {
   async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    if (coverPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(coverPreviewUrl);
+    setCoverPreviewUrl(localUrl);
+
     setCoverUploading(true);
     setCoverError("");
     try {
@@ -63,11 +80,13 @@ export function CardForm({ card }: CardFormProps) {
     setGalleryUploading(true);
     setGalleryError("");
     try {
+      const localUrls = files.map((f) => URL.createObjectURL(f));
       const results = await Promise.all(files.map(uploadFile));
       setGallery((prev) => [
         ...prev,
         ...results.map((r, i) => ({
           url: r.url,
+          previewUrl: localUrls[i],
           type: r.type,
           position: prev.length + i,
         })),
@@ -82,9 +101,11 @@ export function CardForm({ card }: CardFormProps) {
   }
 
   function removeGalleryItem(index: number) {
-    setGallery((prev) =>
-      prev.filter((_, i) => i !== index).map((item, i) => ({ ...item, position: i }))
-    );
+    setGallery((prev) => {
+      const removed = prev[index];
+      if (removed?.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(removed.previewUrl);
+      return prev.filter((_, i) => i !== index).map((item, i) => ({ ...item, position: i }));
+    });
   }
 
   function moveGalleryItem(index: number, dir: -1 | 1) {
@@ -101,7 +122,7 @@ export function CardForm({ card }: CardFormProps) {
   async function handleSubmit(formData: FormData) {
     setSubmitting(true);
     if (imageUrl) formData.set("imageUrl", imageUrl);
-    formData.set("galleryMedia", JSON.stringify(gallery));
+    formData.set("galleryMedia", JSON.stringify(gallery.map(({ url, type, position }) => ({ url, type, position }))));
     try {
       if (card) {
         await updateCard(card.id, formData);
@@ -128,8 +149,9 @@ export function CardForm({ card }: CardFormProps) {
             className="relative flex-shrink-0 rounded-xl overflow-hidden"
             style={{ width: 140, height: 196, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.3)" }}
           >
-            {imageUrl ? (
-              <Image src={imageUrl} alt="Cover preview" fill className="object-cover" sizes="140px" />
+            {coverPreviewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={coverPreviewUrl} alt="Cover preview" className="w-full h-full object-cover" />
             ) : (
               <div className="flex items-center justify-center w-full h-full">
                 <span className="text-white/20 text-4xl">🃏</span>
@@ -177,7 +199,8 @@ export function CardForm({ card }: CardFormProps) {
                     <span className="text-2xl">🎬</span>
                   </div>
                 ) : (
-                  <Image src={item.url} alt={`Gallery ${i + 1}`} fill className="object-cover" sizes="80px" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.previewUrl ?? item.url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
                 )}
 
                 {/* Controls overlay */}

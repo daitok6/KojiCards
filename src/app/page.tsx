@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getFeaturedCards, getCards } from "@/lib/cards";
 import { HoloCard } from "@/components/ui/HoloCard";
+import { HeroFan } from "@/components/ui/HeroFan";
 import { MobileCatalogCard } from "@/components/ui/MobileCatalogCard";
 import type { Card } from "@/types";
 
@@ -128,29 +129,54 @@ export default async function HomePage() {
         </div>
 
         {/* ── Desktop hero ──────────────────────────────────────────────── */}
-        <div className="relative z-10 max-w-4xl mx-auto hidden md:block">
-          <p className="text-purple-400 text-sm font-semibold tracking-widest uppercase mb-4">
-            Pokémon · One Piece TCG
-          </p>
-          <h1
-            className="text-5xl sm:text-7xl font-black tracking-tight mb-6"
-            style={{
-              background: "linear-gradient(135deg, #ffffff 0%, #a855f7 50%, #3b82f6 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              lineHeight: 1.1,
-            }}
-          >
-            Cards Worth<br />Collecting
-          </h1>
-          <p className="text-white/50 text-lg sm:text-xl max-w-xl mx-auto mb-10">
-            Holo rares, secret rares, and sought-after singles — every card
-            hand-inspected and condition-graded by KojiCards.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/cards" className="btn-primary text-base px-8 py-3">Browse Catalog</Link>
-            <Link href="/contact" className="btn-ghost text-base px-8 py-3">Ask About a Card</Link>
+        <div
+          className="relative z-10 w-full hidden md:grid items-center gap-12"
+          style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px", gridTemplateColumns: "1fr 560px" }}
+        >
+          {/* Left: copy */}
+          <div>
+            <p
+              className="text-purple-400 font-semibold tracking-widest uppercase mb-4"
+              style={{ fontSize: 11, letterSpacing: "0.12em" }}
+            >
+              Pokémon · One Piece TCG singles
+            </p>
+            <h1
+              className="font-black tracking-tight text-white leading-[1.08] mb-5"
+              style={{ fontSize: 64 }}
+            >
+              Cards worth<br />collecting.
+            </h1>
+            <p className="text-white/50 leading-relaxed mb-8" style={{ fontSize: 18, maxWidth: 480 }}>
+              Every single hand-inspected and condition-graded. Holo rares, secret rares, and
+              sought-after singles from Pokémon and One Piece TCG.
+            </p>
+            <div className="flex items-center gap-4">
+              <Link href="/cards" className="btn-primary" style={{ padding: "14px 32px", fontSize: 15 }}>
+                Browse {inStockCount > 0 ? `${inStockCount} cards` : "catalog"}
+              </Link>
+              <Link href="/contact" className="btn-ghost" style={{ padding: "13px 28px", fontSize: 15 }}>
+                Ask about a card
+              </Link>
+            </div>
+            <p className="text-white/30 mt-5" style={{ fontSize: 12.5 }}>
+              Condition-graded · Ships insured · Replies within 24h
+            </p>
           </div>
+
+          {/* Right: card fan */}
+          {fanCards.length >= 3 ? (
+            <HeroFan cards={fanCards} />
+          ) : (
+            <div className="flex items-center justify-center" style={{ height: 460 }}>
+              <div
+                className="flex items-center justify-center text-6xl rounded-2xl"
+                style={{ width: 264, height: 370, background: "rgba(168,85,247,0.08)", border: "1px dashed rgba(168,85,247,0.25)" }}
+              >
+                🃏
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -167,12 +193,9 @@ export default async function HomePage() {
             </div>
 
             {/* Desktop heading */}
-            <div className="text-center mb-14 hidden md:block">
-              <p className="text-purple-400 text-xs font-semibold tracking-widest uppercase mb-3">
-                {featured.length > 0 ? "Featured Picks" : "Recent Additions"}
-              </p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white">Hover to feel the magic</h2>
-              <p className="text-white/40 mt-2">Move your cursor over any card to see the holographic effect</p>
+            <div className="mb-10 hidden md:flex items-baseline justify-between">
+              <h2 className="text-2xl font-bold text-white">Featured picks</h2>
+              <Link href="/cards" className="text-purple-400 font-semibold text-sm">View all →</Link>
             </div>
 
             {/* Mobile 2-col grid */}
@@ -182,15 +205,11 @@ export default async function HomePage() {
               ))}
             </div>
 
-            {/* Desktop flex */}
-            <div className="hidden md:flex flex-wrap justify-center gap-8">
-              {(showcase as Card[]).map((card) => (
+            {/* Desktop 4-col grid */}
+            <div className="hidden md:grid gap-6" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+              {(showcase as Card[]).slice(0, 4).map((card) => (
                 <HoloCard key={card.id} card={card} size="md" />
               ))}
-            </div>
-
-            <div className="text-center mt-14 hidden md:block">
-              <Link href="/cards" className="btn-primary px-10 py-3 text-base">View All Cards</Link>
             </div>
           </div>
         </section>
@@ -226,17 +245,16 @@ export default async function HomePage() {
             ))}
           </div>
 
-          {/* Desktop cards */}
-          <div className="hidden md:grid sm:grid-cols-3 gap-8 text-center">
+          {/* Desktop 3-col text-only */}
+          <div className="hidden md:grid grid-cols-3 gap-12">
             {[
-              { icon: "🔍", title: "Condition-Graded", desc: "Every card is individually inspected — Mint, Near Mint, LP — so you know exactly what you're getting." },
-              { icon: "🃏", title: "Pokémon & One Piece", desc: "Specialist focus on Pokémon and One Piece TCG singles, from Base Set classics to current-set pulls." },
-              { icon: "💬", title: "Ask Before You Buy", desc: "Have a question about a card? Reach out directly — no bots, no ticket queues, just a real answer." },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="p-6 rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span className="text-4xl">{icon}</span>
-                <h3 className="text-white font-bold text-lg mt-3 mb-2">{title}</h3>
-                <p className="text-white/40 text-sm">{desc}</p>
+              { title: "Condition-graded", desc: "Every card is individually inspected — Mint, Near Mint, LP — so you know exactly what you're getting." },
+              { title: "Pokémon & One Piece", desc: "Specialist focus on two games only. From Base Set classics to current-set pulls." },
+              { title: "Ask before you buy", desc: "Have a question about a card? Reach out directly — no bots, no ticket queues, just a real answer." },
+            ].map(({ title, desc }) => (
+              <div key={title}>
+                <h3 className="text-white font-bold text-base mb-2">{title}</h3>
+                <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>

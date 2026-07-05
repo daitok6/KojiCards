@@ -47,4 +47,5 @@ export interface CardFilters {
   rarity?: string;
   minPrice?: number;
   maxPrice?: number;
+  priceBand?: string;
 }

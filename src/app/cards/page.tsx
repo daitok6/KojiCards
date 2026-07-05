@@ -21,13 +21,18 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const get = (k: string) => (typeof sp[k] === "string" ? sp[k] : undefined);
 
+  const priceBand = get("priceBand") ?? "";
+  const bandMin = priceBand === "50-150" ? 50 : priceBand === "o150" ? 150 : undefined;
+  const bandMax = priceBand === "u50" ? 50 : priceBand === "50-150" ? 150 : undefined;
+
   const filters: Filters = {
     query: get("q"),
     game: get("game"),
     set: get("set"),
     rarity: get("rarity"),
-    minPrice: get("minPrice") ? Number(get("minPrice")) : undefined,
-    maxPrice: get("maxPrice") ? Number(get("maxPrice")) : undefined,
+    minPrice: bandMin ?? (get("minPrice") ? Number(get("minPrice")) : undefined),
+    maxPrice: bandMax ?? (get("maxPrice") ? Number(get("maxPrice")) : undefined),
+    priceBand,
   };
 
   const [cards, options] = await Promise.all([
@@ -37,20 +42,23 @@ export default async function CatalogPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="text-4xl font-black text-white mb-2">Card Catalog</h1>
         <p className="text-white/40">
-          {cards.length} card{cards.length !== 1 ? "s" : ""} available
+          {cards.length} of {options.totalCount} ·{" "}
+          {cards.filter((c) => c.stock > 0).length} in stock
         </p>
       </div>
 
       {/* Filters */}
-      <div className="mb-10">
+      <div className="mb-8">
         <Suspense fallback={null}>
           <CardFilters
             games={options.games}
             sets={options.sets}
             rarities={options.rarities}
+            gameCounts={options.gameCounts}
+            totalCount={options.totalCount}
           />
         </Suspense>
       </div>
@@ -64,8 +72,8 @@ export default async function CatalogPage({ searchParams }: PageProps) {
               <MobileCatalogCard key={card.id} card={card} />
             ))}
           </div>
-          {/* Desktop flex */}
-          <div className="hidden md:flex flex-wrap gap-8 justify-start">
+          {/* Desktop auto-fill grid */}
+          <div className="hidden md:grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(215px, 1fr))" }}>
             {(cards as unknown as Card[]).map((card) => (
               <HoloCard key={card.id} card={card} size="md" />
             ))}

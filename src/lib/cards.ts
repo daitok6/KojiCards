@@ -53,15 +53,22 @@ export async function getCard(id: string) {
 }
 
 export async function getFilterOptions() {
-  const [games, sets, rarities] = await Promise.all([
+  const [games, sets, rarities, gameCounts, totalCount] = await Promise.all([
     prisma.card.findMany({ select: { game: true }, distinct: ["game"] }),
     prisma.card.findMany({ select: { set: true }, distinct: ["set"] }),
     prisma.card.findMany({ select: { rarity: true }, distinct: ["rarity"] }),
+    prisma.card.groupBy({ by: ["game"], _count: { id: true } }),
+    prisma.card.count(),
   ]);
+
+  const gameCountMap: Record<string, number> = {};
+  for (const g of gameCounts) gameCountMap[g.game] = g._count.id;
 
   return {
     games: games.map((c) => c.game),
     sets: sets.map((c) => c.set),
     rarities: rarities.map((c) => c.rarity),
+    gameCounts: gameCountMap,
+    totalCount,
   };
 }

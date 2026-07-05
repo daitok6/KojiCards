@@ -57,9 +57,18 @@ export default async function CardDetailPage({ params }: PageProps) {
     <>
       {/* ── Main content ───────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16 pb-28 md:pb-16">
-        <Link href="/cards" className="btn-ghost text-sm mb-8 md:mb-10 inline-flex">
+        {/* Mobile back link */}
+        <Link href="/cards" className="btn-ghost text-sm mb-8 inline-flex md:hidden">
           ← Back to Catalog
         </Link>
+        {/* Desktop breadcrumb */}
+        <nav className="hidden md:flex items-center gap-2 text-sm text-white/40 mb-10">
+          <Link href="/cards" className="hover:text-white/70 transition-colors">Catalog</Link>
+          <span>/</span>
+          <Link href={`/cards?game=${encodeURIComponent(card.game)}`} className="hover:text-white/70 transition-colors">{card.game}</Link>
+          <span>/</span>
+          <span className="text-white/70">{card.name}</span>
+        </nav>
 
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
           {/* Card gallery */}
@@ -126,26 +135,25 @@ export default async function CardDetailPage({ params }: PageProps) {
             </p>
 
             {/* Desktop CTA buttons — hidden on mobile (replaced by sticky bar) */}
-            <div className="hidden md:flex gap-4 flex-wrap">
+            <div className="hidden md:flex flex-col gap-3" style={{ maxWidth: 400 }}>
               <Link
                 href={`/contact?card=${card.id}`}
-                className="btn-primary px-8 py-3"
+                className="btn-primary text-center"
+                style={{ padding: "15px", fontSize: 15, fontWeight: 700 }}
               >
-                {priceDisplay ? `Inquire · ${priceDisplay}` : "Inquire About This Card"}
+                Inquire about {card.name}
               </Link>
               {whatsappUrl && (
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-ghost px-8 py-3"
+                  className="btn-ghost text-center"
+                  style={{ padding: "14px", fontSize: 15 }}
                 >
-                  WhatsApp
+                  Message on WhatsApp
                 </a>
               )}
-              <Link href="/cards" className="btn-ghost px-8 py-3">
-                More Cards
-              </Link>
             </div>
           </div>
         </div>

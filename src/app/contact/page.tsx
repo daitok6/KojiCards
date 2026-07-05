@@ -1,4 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 import { ContactForm } from "@/components/ui/ContactForm";
 
 export const metadata: Metadata = {
@@ -6,14 +9,18 @@ export const metadata: Metadata = {
   description: "Get in touch with KojiCards — trading card vendor.",
 };
 
-const VENDOR_EMAIL = process.env.NEXT_PUBLIC_VENDOR_EMAIL ?? "contact@example.com";
-const VENDOR_PHONE = process.env.NEXT_PUBLIC_VENDOR_PHONE ?? "+1 (555) 000-0000";
-const VENDOR_WHATSAPP = process.env.NEXT_PUBLIC_VENDOR_WHATSAPP ?? "15550000000";
-const VENDOR_INSTAGRAM = process.env.NEXT_PUBLIC_VENDOR_INSTAGRAM ?? "#";
-const VENDOR_ADDRESS = process.env.NEXT_PUBLIC_VENDOR_ADDRESS ?? "Address not set";
-const MAPS_EMBED = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED ?? "";
+export default async function ContactPage() {
+  const info = await prisma.vendorInfo.findUnique({ where: { id: "singleton" } });
 
-export default function ContactPage() {
+  const email     = info?.email     || "";
+  const phone     = info?.phone     || "";
+  const whatsapp  = info?.whatsapp  || "";
+  const instagram = info?.instagram || "";
+  const address   = info?.address   || "";
+  const mapsEmbed = info?.mapsEmbed || "";
+
+  const hasAnyInfo = email || phone || whatsapp || instagram || address;
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-14">
@@ -34,57 +41,65 @@ export default function ContactPage() {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-white">Reach us directly</h2>
 
-          {/* Email */}
-          <ContactCard
-            icon="✉️"
-            title="Email"
-            value={VENDOR_EMAIL}
-            href={`mailto:${VENDOR_EMAIL}`}
-          />
-
-          {/* Phone */}
-          <ContactCard
-            icon="📞"
-            title="Phone"
-            value={VENDOR_PHONE}
-            href={`tel:${VENDOR_PHONE.replace(/\D/g, "")}`}
-          />
-
-          {/* WhatsApp */}
-          <ContactCard
-            icon="💬"
-            title="WhatsApp"
-            value="Chat on WhatsApp"
-            href={`https://wa.me/${VENDOR_WHATSAPP}`}
-            external
-          />
-
-          {/* Instagram */}
-          <ContactCard
-            icon="📸"
-            title="Instagram"
-            value="@kojicards"
-            href={VENDOR_INSTAGRAM}
-            external
-          />
-
-          {/* Address */}
-          <div
-            className="p-5 rounded-xl flex gap-4"
-            style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
-          >
-            <span className="text-2xl">📍</span>
-            <div>
-              <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Location</p>
-              <p className="text-white font-medium">{VENDOR_ADDRESS}</p>
+          {!hasAnyInfo && (
+            <div
+              className="p-5 rounded-xl text-white/40 text-sm"
+              style={{ border: "1px dashed rgba(255,255,255,0.1)" }}
+            >
+              Contact details not set up yet. Log in to the admin panel to add them.
             </div>
-          </div>
+          )}
 
-          {/* Map embed */}
-          {MAPS_EMBED && (
+          {email && (
+            <ContactCard icon="✉️" title="Email" value={email} href={`mailto:${email}`} />
+          )}
+
+          {phone && (
+            <ContactCard
+              icon="📞"
+              title="Phone"
+              value={phone}
+              href={`tel:${phone.replace(/\D/g, "")}`}
+            />
+          )}
+
+          {whatsapp && (
+            <ContactCard
+              icon="💬"
+              title="WhatsApp"
+              value="Chat on WhatsApp"
+              href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
+              external
+            />
+          )}
+
+          {instagram && (
+            <ContactCard
+              icon="📸"
+              title="Instagram"
+              value={instagram.replace(/https?:\/\/(www\.)?instagram\.com\/?/, "@").replace(/\/$/, "")}
+              href={instagram}
+              external
+            />
+          )}
+
+          {address && (
+            <div
+              className="p-5 rounded-xl flex gap-4"
+              style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+            >
+              <span className="text-2xl">📍</span>
+              <div>
+                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Location</p>
+                <p className="text-white font-medium">{address}</p>
+              </div>
+            </div>
+          )}
+
+          {mapsEmbed && (
             <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)" }}>
               <iframe
-                src={MAPS_EMBED}
+                src={mapsEmbed}
                 width="100%"
                 height="220"
                 style={{ border: 0, display: "block" }}

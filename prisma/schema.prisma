@@ -40,3 +40,14 @@ model User {
   email    String @unique
   password String
 }
+
+model VendorInfo {
+  id        String   @id @default("singleton")
+  email     String   @default("")
+  phone     String   @default("")
+  whatsapp  String   @default("")
+  instagram String   @default("")
+  address   String   @default("")
+  mapsEmbed String   @default("")
+  updatedAt DateTime @updatedAt
+}

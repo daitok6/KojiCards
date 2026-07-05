@@ -24,6 +24,9 @@ export default async function AdminPage() {
           <Link href="/admin/cards/new" className="btn-primary">
             + Add Card
           </Link>
+          <Link href="/admin/settings" className="btn-ghost text-sm px-4 py-2">
+            Contact Info
+          </Link>
           <AdminSignOut />
         </div>
       </div>

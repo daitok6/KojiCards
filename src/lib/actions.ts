@@ -143,6 +143,30 @@ export async function deleteCard(id: string) {
   revalidatePath("/admin");
 }
 
+// ── Vendor Info Action ────────────────────────────────────────────────────────
+
+export async function updateVendorInfo(formData: FormData) {
+  await requireAdmin();
+
+  const data = {
+    email:     (formData.get("email")     as string ?? "").trim(),
+    phone:     (formData.get("phone")     as string ?? "").trim(),
+    whatsapp:  (formData.get("whatsapp")  as string ?? "").trim(),
+    instagram: (formData.get("instagram") as string ?? "").trim(),
+    address:   (formData.get("address")   as string ?? "").trim(),
+    mapsEmbed: (formData.get("mapsEmbed") as string ?? "").trim(),
+  };
+
+  await prisma.vendorInfo.upsert({
+    where:  { id: "singleton" },
+    update: data,
+    create: { id: "singleton", ...data },
+  });
+
+  revalidatePath("/contact");
+  revalidatePath("/admin/settings");
+}
+
 // ── Contact Action ────────────────────────────────────────────────────────────
 
 export async function sendContactEmail(formData: FormData) {

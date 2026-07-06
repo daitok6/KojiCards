@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { deleteCard } from "@/lib/actions";
+import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton";
 import type { Card } from "@/types";
 
 interface Props {
@@ -12,18 +11,6 @@ interface Props {
 }
 
 export function AdminCardRow({ card, isEven }: Props) {
-  const [deleting, setDeleting] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-
-  async function handleDelete() {
-    if (!confirmed) {
-      setConfirmed(true);
-      return;
-    }
-    setDeleting(true);
-    await deleteCard(card.id);
-  }
-
   return (
     <tr
       style={{
@@ -86,17 +73,7 @@ export function AdminCardRow({ card, isEven }: Props) {
           <Link href={`/admin/cards/${card.id}`} className="btn-ghost text-xs px-3 py-1.5">
             Edit
           </Link>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-medium disabled:opacity-50 ${
-              confirmed
-                ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
-                : "bg-transparent border-red-500/20 text-red-500/60 hover:border-red-500/50 hover:text-red-400"
-            }`}
-          >
-            {deleting ? "Deleting…" : confirmed ? "Confirm?" : "Delete"}
-          </button>
+          <AdminDeleteButton cardId={card.id} />
         </div>
       </td>
     </tr>

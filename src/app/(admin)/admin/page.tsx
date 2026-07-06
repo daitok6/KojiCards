@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminCardRow } from "@/components/admin/AdminCardRow";
+import { AdminCardMobile } from "@/components/admin/AdminCardMobile";
 import { AdminSignOut } from "@/components/admin/AdminSignOut";
 import type { Metadata } from "next";
 
@@ -43,31 +44,44 @@ export default async function AdminPage() {
           </Link>
         </div>
       ) : (
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                {["Image", "Name", "Game / Set", "Rarity", "Condition", "Price", "Stock", "Actions"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-white/40 font-semibold text-xs uppercase tracking-wider">
-                    {h}
-                  </th>
+        <>
+          {/* Mobile list — stacked cards */}
+          <div className="md:hidden flex flex-col gap-3">
+            {cards.map((card) => (
+              <AdminCardMobile
+                key={card.id}
+                card={card as unknown as import("@/types").Card}
+              />
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div
+            className="hidden md:block rounded-2xl overflow-x-auto"
+            style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                  {["Image", "Name", "Game / Set", "Rarity", "Condition", "Price", "Stock", "Actions"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-white/40 font-semibold text-xs uppercase tracking-wider">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {cards.map((card, i) => (
+                  <AdminCardRow
+                    key={card.id}
+                    card={card as unknown as import("@/types").Card}
+                    isEven={i % 2 === 0}
+                  />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cards.map((card, i) => (
-                <AdminCardRow
-                  key={card.id}
-                  card={card as unknown as import("@/types").Card}
-                  isEven={i % 2 === 0}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

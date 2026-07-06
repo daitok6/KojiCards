@@ -1,4 +1,4 @@
-import { get } from "@vercel/blob";
+import { issueSignedToken, presignUrl } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
 
 // Proxies private Vercel Blob URLs server-side so the browser can display them.
@@ -12,19 +12,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
   }
 
-  const result = await get(url, {
-    access: "private",
-    token: process.env.BLOB_READ_WRITE_TOKEN,
+  // Extract the pathname (strip leading /) from the private blob URL.
+  const pathname = new URL(url).pathname.slice(1);
+
+  // Issue a short-lived delegation token for GET and build a presigned URL.
+  // The presigned URL has auth embedded so no Authorization header is needed.
+  const token = await issueSignedToken({
+    operations: ["get"],
+    pathname,
+    validUntil: Date.now() + 5 * 60 * 1000, // 5 minutes
   });
 
-  if (!result || result.statusCode !== 200) {
-    return new NextResponse(null, { status: 404 });
+  const { presignedUrl } = await presignUrl(token, {
+    operation: "get",
+    pathname,
+    access: "private",
+  });
+
+  // Fetch the presigned URL and stream it back — no auth header needed.
+  const res = await fetch(presignedUrl);
+
+  if (!res.ok) {
+    return new NextResponse(null, { status: res.status });
   }
 
-  return new NextResponse(result.stream, {
+  const contentType = res.headers.get("content-type") ?? "application/octet-stream";
+
+  return new NextResponse(res.body, {
     headers: {
-      "Content-Type": result.blob.contentType,
-      "Cache-Control": "public, max-age=31536000, immutable",
+      "Content-Type": contentType,
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
     },
   });
 }

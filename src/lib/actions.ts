@@ -48,16 +48,24 @@ export async function createCard(formData: FormData) {
   const parsed = cardSchema.safeParse({
     ...raw,
     featured: raw.featured === "on" || raw.featured === "true",
+    firstEdition: raw.firstEdition === "on" || raw.firstEdition === "true",
+    graded: raw.graded === "on" || raw.graded === "true",
   });
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+
+  // When not graded, null out stale graded sub-fields
+  const cardData = {
+    ...parsed.data,
+    ...(parsed.data.graded ? {} : { gradingCompany: undefined, grade: undefined, certNumber: undefined }),
+  };
 
   const galleryMedia = parseGalleryMedia(formData);
 
   await prisma.card.create({
     data: {
-      ...parsed.data,
+      ...cardData,
       imageUrl,
-      price: parsed.data.price ?? null,
+      price: cardData.price ?? null,
       media: {
         create: galleryMedia.map((m) => ({
           url: m.url,
@@ -82,8 +90,16 @@ export async function updateCard(id: string, formData: FormData) {
   const parsed = cardSchema.safeParse({
     ...raw,
     featured: raw.featured === "on" || raw.featured === "true",
+    firstEdition: raw.firstEdition === "on" || raw.firstEdition === "true",
+    graded: raw.graded === "on" || raw.graded === "true",
   });
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+
+  // When not graded, null out stale graded sub-fields
+  const cardData = {
+    ...parsed.data,
+    ...(parsed.data.graded ? {} : { gradingCompany: undefined, grade: undefined, certNumber: undefined }),
+  };
 
   const galleryMedia = parseGalleryMedia(formData);
 
@@ -97,8 +113,8 @@ export async function updateCard(id: string, formData: FormData) {
     prisma.card.update({
       where: { id },
       data: {
-        ...parsed.data,
-        price: parsed.data.price ?? null,
+        ...cardData,
+        price: cardData.price ?? null,
         ...(imageUrl ? { imageUrl } : {}),
         media: {
           create: galleryMedia.map((m) => ({

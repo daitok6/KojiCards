@@ -9,6 +9,13 @@ interface CardGalleryProps {
   card: Card;
 }
 
+function toViewableUrl(url: string): string {
+  if (url.includes(".private.blob.vercel-storage.com")) {
+    return `/api/blob-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+
 export function CardGallery({ card }: CardGalleryProps) {
   const media = card.media ?? [];
   // active: null = show the cover holo card; number = show that gallery item
@@ -78,7 +85,7 @@ export function CardGallery({ card }: CardGalleryProps) {
                 <VideoThumb url={item.url} />
               ) : (
                 <Image
-                  src={item.url}
+                  src={toViewableUrl(item.url)}
                   alt={`Gallery ${i + 1}`}
                   fill
                   className="object-cover"
@@ -147,7 +154,7 @@ function MediaViewer({ item }: { item: CardMedia }) {
       }}
     >
       <Image
-        src={item.url}
+        src={toViewableUrl(item.url)}
         alt="Gallery image"
         fill
         className="object-contain"

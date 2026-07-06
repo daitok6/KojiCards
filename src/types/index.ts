@@ -51,7 +51,7 @@ export interface Card {
   sku?: string;
   artist?: string;
   releaseYear?: number;
-  status: string;
+  status: CardStatus;
   details?: string;
   createdAt: Date;
   updatedAt: Date;

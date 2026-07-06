@@ -30,7 +30,10 @@ export const cardSchema = z.object({
 
   // Descriptive
   artist: z.string().max(200).optional().transform(v => v === "" ? undefined : v),
-  releaseYear: z.coerce.number().int().min(1990).max(2100).optional(),
+  releaseYear: z.preprocess(
+    (v) => (v === "" || v === undefined ? undefined : v),
+    z.coerce.number().int().min(1990).max(2100).optional()
+  ),
   details: z.string().max(2000).optional().transform(v => v === "" ? undefined : v),
 });
 

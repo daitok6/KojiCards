@@ -98,7 +98,7 @@ export async function updateCard(id: string, formData: FormData) {
   // When not graded, null out stale graded sub-fields
   const cardData = {
     ...parsed.data,
-    ...(parsed.data.graded ? {} : { gradingCompany: undefined, grade: undefined, certNumber: undefined }),
+    ...(parsed.data.graded ? {} : { gradingCompany: null, grade: null, certNumber: null }),
   };
 
   const galleryMedia = parseGalleryMedia(formData);

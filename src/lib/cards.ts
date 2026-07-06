@@ -51,7 +51,11 @@ export async function getFeaturedCards() {
     where: { featured: true },
     orderBy: { createdAt: "desc" },
     take: 6,
-  }).then((cards) => cards.map(serialize));
+  }).then((cards) => cards.map(serialize).sort((a, b) => {
+    const ra = STATUS_RANK[a.status] ?? 0;
+    const rb = STATUS_RANK[b.status] ?? 0;
+    return ra - rb;
+  }));
 }
 
 export async function getCard(id: string) {

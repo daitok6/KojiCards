@@ -8,6 +8,14 @@ import type { Card, CardMedia } from "@/types";
 const GAMES = ["Pokémon", "Magic: The Gathering", "Yu-Gi-Oh!", "Dragon Ball Super", "One Piece", "Flesh and Blood", "Other"];
 const RARITIES = ["Common", "Uncommon", "Rare", "Holo Rare", "Ultra Rare", "Secret Rare", "Promo"];
 const CONDITIONS = ["Mint", "Near Mint", "Lightly Played", "Moderately Played", "Heavily Played", "Damaged"];
+const FINISHES = ["Normal", "Holo", "Reverse Holo", "Foil", "Other"];
+const LANGUAGES = ["English", "Japanese", "Chinese", "Korean", "French", "German", "Spanish", "Italian", "Other"];
+const GRADING_COMPANIES = ["PSA", "BGS", "CGC", "SGC", "Other"];
+const STATUSES = [
+  { value: "available", label: "Available" },
+  { value: "reserved", label: "Reserved" },
+  { value: "sold", label: "Sold" },
+];
 
 interface GalleryItem { url: string; previewUrl?: string; type: "image" | "video"; position: number; }
 
@@ -27,6 +35,7 @@ async function uploadFile(file: File): Promise<{ url: string; type: "image" | "v
 }
 
 export function CardForm({ card }: CardFormProps) {
+  const [isGraded, setIsGraded] = useState(card?.graded ?? false);
   const [imageUrl, setImageUrl] = useState(card?.imageUrl ?? "");
   const [coverPreviewUrl, setCoverPreviewUrl] = useState(card?.imageUrl ?? "");
   const [coverUploading, setCoverUploading] = useState(false);
@@ -292,13 +301,114 @@ export function CardForm({ card }: CardFormProps) {
             <label className="block text-sm text-white/50 mb-1.5">Stock Quantity *</label>
             <input name="stock" type="number" min="0" step="1" required defaultValue={card?.stock ?? 1} />
           </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">Card Number</label>
+            <input name="cardNumber" type="text" defaultValue={card?.cardNumber ?? ""} placeholder="e.g. 4/102" />
+          </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">Finish *</label>
+            <select name="finish" required defaultValue={card?.finish ?? "Normal"}>
+              {FINISHES.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">Language *</label>
+            <select name="language" required defaultValue={card?.language ?? "English"}>
+              {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">SKU</label>
+            <input name="sku" type="text" defaultValue={card?.sku ?? ""} placeholder="Your stock code" />
+          </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">Artist</label>
+            <input name="artist" type="text" defaultValue={card?.artist ?? ""} placeholder="Card illustrator" />
+          </div>
+          <div>
+            <label className="block text-sm text-white/50 mb-1.5">Release Year</label>
+            <input name="releaseYear" type="number" min="1990" max="2100" step="1"
+              defaultValue={card?.releaseYear ?? ""} placeholder="e.g. 1999" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm text-white/50 mb-1.5">Availability Status *</label>
+            <select name="status" required defaultValue={card?.status ?? "available"}>
+              {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
         </div>
-        <label className="flex items-center gap-3 cursor-pointer w-fit">
-          <input name="featured" type="checkbox" defaultChecked={card?.featured}
-            className="w-4 h-4 accent-purple-500"
-            style={{ width: "auto", background: "none", border: "none", padding: 0 }} />
-          <span className="text-sm text-white/60">Feature this card on the homepage</span>
-        </label>
+        <div className="flex flex-wrap gap-6">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input name="featured" type="checkbox" defaultChecked={card?.featured}
+              className="w-4 h-4 accent-purple-500"
+              style={{ width: "auto", background: "none", border: "none", padding: 0 }} />
+            <span className="text-sm text-white/60">Feature on homepage</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input name="firstEdition" type="checkbox" defaultChecked={card?.firstEdition}
+              className="w-4 h-4 accent-purple-500"
+              style={{ width: "auto", background: "none", border: "none", padding: 0 }} />
+            <span className="text-sm text-white/60">1st Edition</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input name="graded" type="checkbox" checked={isGraded} onChange={e => setIsGraded(e.target.checked)}
+              className="w-4 h-4 accent-purple-500"
+              style={{ width: "auto", background: "none", border: "none", padding: 0 }} />
+            <span className="text-sm text-white/60">Graded card</span>
+          </label>
+        </div>
+        {isGraded && (
+          <div
+            className="p-4 rounded-xl"
+            style={{ border: "1px solid rgba(168,85,247,0.2)", background: "rgba(168,85,247,0.05)" }}
+          >
+            <p className="text-sm text-purple-300 font-semibold mb-4">Grading Details</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm text-white/50 mb-1.5">Grading Company</label>
+                <select name="gradingCompany" defaultValue={card?.gradingCompany ?? ""}>
+                  <option value="">Select…</option>
+                  {GRADING_COMPANIES.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-white/50 mb-1.5">Grade</label>
+                <input name="grade" type="text" defaultValue={card?.grade ?? ""} placeholder="e.g. 10, 9.5" />
+              </div>
+              <div>
+                <label className="block text-sm text-white/50 mb-1.5">Cert Number</label>
+                <input name="certNumber" type="text" defaultValue={card?.certNumber ?? ""} placeholder="Cert / serial number" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Details / Notes ──────────────────────────────────────────────────── */}
+      <div
+        className="p-6 rounded-xl space-y-3"
+        style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}
+      >
+        <h2 className="text-white font-semibold">Details / Notes</h2>
+        <p className="text-white/30 text-xs">
+          Free text for condition notes, whitening, misprint details, signatures, or anything else buyers should know.
+        </p>
+        <textarea
+          name="details"
+          rows={4}
+          defaultValue={card?.details ?? ""}
+          placeholder="e.g. Light whitening on back, first-print error, signed by artist…"
+          style={{
+            width: "100%",
+            resize: "vertical",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 10,
+            color: "white",
+            padding: "10px 14px",
+            fontSize: 14,
+          }}
+        />
       </div>
 
       {/* ── Submit ────────────────────────────────────────────────────────── */}

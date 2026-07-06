@@ -18,9 +18,25 @@ model Card {
   price     Decimal?
   stock     Int         @default(1)
   featured  Boolean     @default(false)
+  // --- New catalogue fields ---
+  cardNumber    String?  // Collector / set number e.g. "4/102"
+  finish        String   @default("Normal")   // Normal · Holo · Reverse Holo · Foil · Other
+  language      String   @default("English")  // English · Japanese · Chinese · Korean · French · German · Spanish · Italian · Other
+  firstEdition  Boolean  @default(false)
+  graded        Boolean  @default(false)
+  gradingCompany String? // PSA · BGS · CGC · SGC · Other
+  grade         String?  // e.g. "10", "9.5" — string to allow half grades
+  certNumber    String?  // Grading cert / serial number
+  sku           String?  // Vendor stock code
+  artist        String?  // Card illustrator
+  releaseYear   Int?     // Set release year e.g. 1999
+  status        String   @default("available") // "available" | "reserved" | "sold"
+  details       String?  // Free-text notes (whitening, misprint, signed, etc.)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   media     CardMedia[]
+
+  @@index([status])
 }
 
 model CardMedia {

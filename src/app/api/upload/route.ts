@@ -1,5 +1,4 @@
-import { handleUploadPresigned, type HandleUploadPresignedBody } from "@vercel/blob/client";
-import { issueSignedToken } from "@vercel/blob";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
@@ -7,26 +6,20 @@ const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_VIDEOS = ["video/mp4", "video/webm", "video/quicktime"];
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadPresignedBody;
+  const body = (await request.json()) as HandleUploadBody;
 
   try {
-    const jsonResponse = await handleUploadPresigned({
+    const jsonResponse = await handleUpload({
       body,
       request,
-      getSignedToken: async (pathname) => {
+      onBeforeGenerateToken: async (pathname) => {
         const session = await auth();
         if (!session?.user) throw new Error("Unauthorized");
 
-        const token = await issueSignedToken({
-          operations: ["put"],
+        return {
           allowedContentTypes: [...ALLOWED_IMAGES, ...ALLOWED_VIDEOS],
           maximumSizeInBytes: 50 * 1024 * 1024,
-          pathname,
-        });
-
-        return {
-          token,
-          urlOptions: { addRandomSuffix: true },
+          addRandomSuffix: true,
         };
       },
     });

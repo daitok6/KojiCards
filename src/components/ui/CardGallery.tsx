@@ -47,7 +47,7 @@ export function CardGallery({ card }: CardGalleryProps) {
             aria-label="Show cover"
           >
             <Image
-              src={card.imageUrl}
+              src={toViewableUrl(card.imageUrl)}
               alt="Cover"
               fill
               className="object-cover"

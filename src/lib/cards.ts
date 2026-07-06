@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import type { Card, CardFilters } from "@/types";
 
+// Rank statuses so sold cards sort to the bottom while preserving featured/date order within groups
+const STATUS_RANK: Record<string, number> = { available: 0, reserved: 1, sold: 2 };
+
 // Prisma returns price as Decimal — convert to plain number so it can cross
 // the Server→Client component boundary.
 function serialize(card: Record<string, unknown>): Card {
@@ -8,7 +11,7 @@ function serialize(card: Record<string, unknown>): Card {
 }
 
 export async function getCards(filters: CardFilters = {}) {
-  const { query, game, set, rarity, minPrice, maxPrice } = filters;
+  const { query, game, set, rarity, minPrice, maxPrice, status, finish } = filters;
 
   return prisma.card.findMany({
     where: {
@@ -32,9 +35,15 @@ export async function getCards(filters: CardFilters = {}) {
             },
           }
         : {}),
+      ...(status ? { status: { equals: status, mode: "insensitive" } } : {}),
+      ...(finish ? { finish: { equals: finish, mode: "insensitive" } } : {}),
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-  }).then((cards) => cards.map(serialize));
+  }).then((cards) => cards.map(serialize).sort((a, b) => {
+    const ra = STATUS_RANK[a.status] ?? 0;
+    const rb = STATUS_RANK[b.status] ?? 0;
+    return ra - rb;
+  }));
 }
 
 export async function getFeaturedCards() {

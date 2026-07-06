@@ -3,15 +3,18 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { getFeaturedCards, getCards } from "@/lib/cards";
+import { prisma } from "@/lib/prisma";
 import { HoloCard } from "@/components/ui/HoloCard";
 import { HeroFan } from "@/components/ui/HeroFan";
 import { MobileCatalogCard } from "@/components/ui/MobileCatalogCard";
+import { AnnouncementBanner } from "@/components/ui/AnnouncementBanner";
 import type { Card } from "@/types";
 
 export default async function HomePage() {
-  const [featured, recent] = await Promise.all([
+  const [featured, recent, announcement] = await Promise.all([
     getFeaturedCards(),
     getCards(),
+    prisma.announcement.findUnique({ where: { id: "singleton" } }),
   ]);
 
   const showcase = featured.length > 0 ? featured : recent.slice(0, 6);
@@ -20,6 +23,10 @@ export default async function HomePage() {
 
   return (
     <>
+      {announcement?.active && announcement.message && (
+        <AnnouncementBanner message={announcement.message} link={announcement.link || undefined} />
+      )}
+
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden min-h-[90vh] flex flex-col items-center justify-center text-center px-4">
         {/* Ambient blobs */}

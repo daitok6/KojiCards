@@ -69,3 +69,25 @@ export interface CardFilters {
   status?: string;
   finish?: string;
 }
+
+export interface Event {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate?: Date | null;
+  city: string;
+  venue?: string | null;
+  booth?: string | null;
+  description?: string | null;
+  link?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Announcement {
+  id: string;
+  message: string;
+  link: string;
+  active: boolean;
+  updatedAt: Date;
+}

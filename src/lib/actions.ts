@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { cardSchema, contactSchema } from "@/lib/validations";
+import { cardSchema, contactSchema, eventSchema } from "@/lib/validations";
 import { auth } from "@/lib/auth";
 import { del } from "@vercel/blob";
 import { Resend } from "resend";
@@ -181,6 +181,80 @@ export async function updateVendorInfo(formData: FormData) {
 
   revalidatePath("/contact");
   revalidatePath("/admin/settings");
+}
+
+// ── Event Actions ─────────────────────────────────────────────────────────────
+
+export async function createEvent(formData: FormData) {
+  await requireAdmin();
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = eventSchema.safeParse(raw);
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+
+  await prisma.event.create({
+    data: {
+      ...parsed.data,
+      endDate: parsed.data.endDate ?? null,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/events");
+  revalidatePath("/admin/events");
+  redirect("/admin/events");
+}
+
+export async function updateEvent(id: string, formData: FormData) {
+  await requireAdmin();
+
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = eventSchema.safeParse(raw);
+  if (!parsed.success) throw new Error(parsed.error.issues[0].message);
+
+  await prisma.event.update({
+    where: { id },
+    data: {
+      ...parsed.data,
+      endDate: parsed.data.endDate ?? null,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/events");
+  revalidatePath("/admin/events");
+  redirect("/admin/events");
+}
+
+export async function deleteEvent(id: string) {
+  await requireAdmin();
+
+  await prisma.event.delete({ where: { id } });
+
+  revalidatePath("/");
+  revalidatePath("/events");
+  revalidatePath("/admin/events");
+}
+
+// ── Announcement Action ───────────────────────────────────────────────────────
+
+export async function updateAnnouncement(formData: FormData) {
+  await requireAdmin();
+
+  const data = {
+    message: (formData.get("message") as string ?? "").trim(),
+    link:    (formData.get("link")    as string ?? "").trim(),
+    active:  formData.get("active") === "on" || formData.get("active") === "true",
+  };
+
+  await prisma.announcement.upsert({
+    where:  { id: "singleton" },
+    update: data,
+    create: { id: "singleton", ...data },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/announcement");
 }
 
 // ── Contact Action ────────────────────────────────────────────────────────────

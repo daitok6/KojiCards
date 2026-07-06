@@ -25,6 +25,12 @@ export default async function AdminPage() {
           <Link href="/admin/cards/new" className="btn-primary">
             + Add Card
           </Link>
+          <Link href="/admin/events" className="btn-ghost text-sm px-4 py-2">
+            Events
+          </Link>
+          <Link href="/admin/announcement" className="btn-ghost text-sm px-4 py-2">
+            Home Banner
+          </Link>
           <Link href="/admin/settings" className="btn-ghost text-sm px-4 py-2">
             Contact Info
           </Link>

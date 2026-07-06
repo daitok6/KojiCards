@@ -44,5 +44,20 @@ export const contactSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters").max(2000),
 });
 
+export const eventSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  startDate: z.coerce.date(),
+  endDate: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.coerce.date().optional()
+  ),
+  city: z.string().min(1, "City is required").max(200),
+  venue: z.string().max(200).optional().transform(v => v === "" ? undefined : v),
+  booth: z.string().max(100).optional().transform(v => v === "" ? undefined : v),
+  description: z.string().max(2000).optional().transform(v => v === "" ? undefined : v),
+  link: z.string().url("Must be a valid URL").or(z.literal("")).optional().transform(v => v === "" ? undefined : v),
+});
+
 export type CardFormData = z.infer<typeof cardSchema>;
 export type ContactFormData = z.infer<typeof contactSchema>;
+export type EventFormData = z.infer<typeof eventSchema>;

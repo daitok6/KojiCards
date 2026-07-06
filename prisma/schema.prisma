@@ -67,3 +67,27 @@ model VendorInfo {
   mapsEmbed String   @default("")
   updatedAt DateTime @updatedAt
 }
+
+model Event {
+  id          String    @id @default(cuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime?              // set for multi-day shows
+  city        String
+  venue       String?
+  booth       String?                // booth / table number
+  description String?
+  link        String?                // convention's own site
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([startDate])
+}
+
+model Announcement {
+  id        String   @id @default("singleton")
+  message   String   @default("")
+  link      String   @default("")
+  active    Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}

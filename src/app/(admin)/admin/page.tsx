@@ -63,7 +63,7 @@ export default async function AdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                  {["Image", "Name", "Game / Set", "Rarity", "Condition", "Price", "Stock", "Actions"].map((h) => (
+                  {["Image", "Name", "Game / Set", "Rarity", "Condition", "Price", "Stock", "Status", "Actions"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-white/40 font-semibold text-xs uppercase tracking-wider">
                       {h}
                     </th>

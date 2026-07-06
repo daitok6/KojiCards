@@ -5,6 +5,12 @@ import Link from "next/link";
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton";
 import type { Card } from "@/types";
 
+const STATUS_STYLES: Record<string, string> = {
+  available: "text-green-400 bg-green-500/15 border border-green-500/25",
+  reserved: "text-amber-400 bg-amber-500/15 border border-amber-500/25",
+  sold: "text-red-400 bg-red-500/15 border border-red-500/25",
+};
+
 interface Props {
   card: Card;
   isEven: boolean;
@@ -64,6 +70,13 @@ export function AdminCardRow({ card, isEven }: Props) {
           className={`font-semibold ${card.stock === 0 ? "text-red-400" : "text-white/70"}`}
         >
           {card.stock}
+        </span>
+      </td>
+
+      {/* Status */}
+      <td className="px-4 py-3">
+        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLES[card.status] || STATUS_STYLES.available}`}>
+          {card.status}
         </span>
       </td>
 

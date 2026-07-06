@@ -5,6 +5,12 @@ import Link from "next/link";
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton";
 import type { Card } from "@/types";
 
+const STATUS_STYLES: Record<string, string> = {
+  available: "text-green-400 bg-green-500/15 border border-green-500/25",
+  reserved: "text-amber-400 bg-amber-500/15 border border-amber-500/25",
+  sold: "text-red-400 bg-red-500/15 border border-red-500/25",
+};
+
 export function AdminCardMobile({ card }: { card: Card }) {
   return (
     <div
@@ -51,6 +57,13 @@ export function AdminCardMobile({ card }: { card: Card }) {
             <span className="text-[11px] text-white/30">·</span>
             <span className={`text-[11px] font-semibold ${card.stock === 0 ? "text-red-400" : "text-white/60"}`}>
               {card.stock} in stock
+            </span>
+          </div>
+
+          {/* Status badge */}
+          <div className="mt-1.5">
+            <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLES[card.status] || STATUS_STYLES.available}`}>
+              {card.status}
             </span>
           </div>
         </div>

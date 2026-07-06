@@ -15,6 +15,10 @@ export type CardCondition =
   | "Heavily Played"
   | "Damaged";
 
+export type CardStatus = "available" | "reserved" | "sold";
+export type CardFinish = "Normal" | "Holo" | "Reverse Holo" | "Foil" | "Other";
+export type GradingCompany = "PSA" | "BGS" | "CGC" | "SGC" | "Other";
+
 export interface CardMedia {
   id: string;
   cardId: string;
@@ -35,6 +39,20 @@ export interface Card {
   price: number | null;
   stock: number;
   featured: boolean;
+  // Catalogue fields
+  cardNumber?: string;
+  finish: string;
+  language: string;
+  firstEdition: boolean;
+  graded: boolean;
+  gradingCompany?: string;
+  grade?: string;
+  certNumber?: string;
+  sku?: string;
+  artist?: string;
+  releaseYear?: number;
+  status: string;
+  details?: string;
   createdAt: Date;
   updatedAt: Date;
   media?: CardMedia[];
@@ -48,4 +66,6 @@ export interface CardFilters {
   minPrice?: number;
   maxPrice?: number;
   priceBand?: string;
+  status?: string;
+  finish?: string;
 }

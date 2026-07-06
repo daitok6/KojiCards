@@ -1,3 +1,4 @@
+import { get } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
 
 // Proxies private Vercel Blob URLs server-side so the browser can display them.
@@ -11,22 +12,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
   }
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-    },
+  const result = await get(url, {
+    access: "private",
+    token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 
-  if (!res.ok) {
-    return new NextResponse(null, { status: res.status });
+  if (!result || result.statusCode !== 200) {
+    return new NextResponse(null, { status: 404 });
   }
 
-  const contentType = res.headers.get("content-type") ?? "application/octet-stream";
-  const body = await res.arrayBuffer();
-
-  return new NextResponse(body, {
+  return new NextResponse(result.stream, {
     headers: {
-      "Content-Type": contentType,
+      "Content-Type": result.blob.contentType,
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });

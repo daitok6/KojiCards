@@ -3,17 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import { HoloCard } from "@/components/ui/HoloCard";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card, CardMedia } from "@/types";
 
 interface CardGalleryProps {
   card: Card;
-}
-
-function toViewableUrl(url: string): string {
-  if (url.includes(".private.blob.vercel-storage.com")) {
-    return `/api/blob-proxy?url=${encodeURIComponent(url)}`;
-  }
-  return url;
 }
 
 export function CardGallery({ card }: CardGalleryProps) {

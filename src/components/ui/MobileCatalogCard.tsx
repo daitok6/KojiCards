@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card } from "@/types";
 
 const CONDITION_SHORT: Record<string, string> = {
@@ -28,7 +29,7 @@ export function MobileCatalogCard({ card }: { card: Card }) {
         }}
       >
         <Image
-          src={card.imageUrl}
+          src={toViewableUrl(card.imageUrl)}
           alt={card.name}
           fill
           className="object-contain"

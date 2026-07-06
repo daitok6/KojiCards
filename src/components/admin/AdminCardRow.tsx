@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card } from "@/types";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -27,7 +28,7 @@ export function AdminCardRow({ card, isEven }: Props) {
       {/* Image */}
       <td className="px-4 py-3">
         <div className="relative w-10 h-14 rounded-md overflow-hidden">
-          <Image src={card.imageUrl} alt={card.name} fill className="object-cover" sizes="40px" />
+          <Image src={toViewableUrl(card.imageUrl)} alt={card.name} fill className="object-cover" sizes="40px" />
         </div>
       </td>
 

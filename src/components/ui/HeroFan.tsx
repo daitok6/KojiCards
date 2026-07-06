@@ -3,6 +3,7 @@
 import { useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card } from "@/types";
 
 const COND_SHORT: Record<string, string> = {
@@ -69,7 +70,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
           boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
         }}
       >
-        <Image src={left.imageUrl} alt={left.name} fill className="object-contain" sizes="220px" />
+        <Image src={toViewableUrl(left.imageUrl)} alt={left.name} fill className="object-contain" sizes="220px" />
       </div>
 
       {/* Right card */}
@@ -83,7 +84,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
           boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
         }}
       >
-        <Image src={right.imageUrl} alt={right.name} fill className="object-contain" sizes="220px" />
+        <Image src={toViewableUrl(right.imageUrl)} alt={right.name} fill className="object-contain" sizes="220px" />
       </div>
 
       {/* Center card — holo hover, links to detail */}
@@ -103,7 +104,7 @@ export function HeroFan({ cards }: { cards: Card[] }) {
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
       >
-        <Image src={center.imageUrl} alt={center.name} fill className="object-contain" sizes="264px" />
+        <Image src={toViewableUrl(center.imageUrl)} alt={center.name} fill className="object-contain" sizes="264px" />
         {/* Holo foil */}
         <div
           data-foil=""

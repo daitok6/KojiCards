@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card } from "@/types";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -19,7 +20,7 @@ export function AdminCardMobile({ card }: { card: Card }) {
     >
       {/* Thumbnail */}
       <div className="relative flex-shrink-0 w-14 h-20 rounded-md overflow-hidden">
-        <Image src={card.imageUrl} alt={card.name} fill className="object-cover" sizes="56px" />
+        <Image src={toViewableUrl(card.imageUrl)} alt={card.name} fill className="object-cover" sizes="56px" />
       </div>
 
       {/* Info + actions */}

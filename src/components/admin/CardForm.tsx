@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { uploadPresigned } from "@vercel/blob/client";
 import { createCard, updateCard } from "@/lib/actions";
 import type { Card, CardMedia } from "@/types";
 
@@ -24,15 +25,13 @@ interface CardFormProps {
 
 async function uploadFile(file: File): Promise<{ url: string; type: "image" | "video" }> {
   const isVideo = file.type.startsWith("video/");
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: formData });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Upload failed" }));
-    throw new Error(err.error ?? "Upload failed");
-  }
-  const { url } = await res.json();
-  return { url, type: isVideo ? "video" : "image" };
+  const folder = isVideo ? "videos" : "cards";
+  const blob = await uploadPresigned(`${folder}/${file.name}`, file, {
+    access: "public",
+    handleUploadUrl: "/api/upload",
+    contentType: file.type,
+  });
+  return { url: blob.url, type: isVideo ? "video" : "image" };
 }
 
 export function CardForm({ card }: CardFormProps) {

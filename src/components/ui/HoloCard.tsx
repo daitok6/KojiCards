@@ -3,6 +3,7 @@
 import { useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { toViewableUrl } from "@/lib/blobUrl";
 import type { Card } from "@/types";
 
 interface HoloCardProps {
@@ -84,7 +85,7 @@ export function HoloCard({ card, size = "md", linkable = true }: HoloCardProps) 
       {/* Card image — fills the full card */}
       <div className="absolute inset-0">
         <Image
-          src={card.imageUrl}
+          src={toViewableUrl(card.imageUrl)}
           alt={card.name}
           fill
           sizes={`${width}px`}

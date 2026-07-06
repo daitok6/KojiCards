@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { sendContactEmail } from "@/lib/actions";
+import { toViewableUrl } from "@/lib/blobUrl";
 
 interface CardContext {
   id: string;
@@ -48,7 +49,7 @@ export function ContactForm({ cardContext }: ContactFormProps) {
             style={{ width: 38, height: 52, background: "#101018" }}
           >
             <Image
-              src={cardContext.imageUrl}
+              src={toViewableUrl(cardContext.imageUrl)}
               alt={cardContext.name}
               fill
               className="object-contain"

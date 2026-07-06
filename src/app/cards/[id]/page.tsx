@@ -18,7 +18,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!card) return { title: "Card Not Found" };
   return {
     title: card.name,
-    description: `${card.game} · ${card.set} · ${card.rarity} · ${card.condition}`,
+    description: [
+      card.game,
+      card.set,
+      card.cardNumber ? `#${card.cardNumber}` : null,
+      card.rarity,
+      card.condition,
+      card.finish !== "Normal" ? card.finish : null,
+    ].filter(Boolean).join(" · "),
   };
 }
 
@@ -105,7 +112,17 @@ export default async function CardDetailPage({ params }: PageProps) {
                   ⭐ Featured
                 </span>
               )}
-              {card.stock === 0 && (
+              {card.status === "sold" && (
+                <span className="text-[10.5px] font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                  SOLD
+                </span>
+              )}
+              {card.status === "reserved" && (
+                <span className="text-[10.5px] font-semibold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  Reserved
+                </span>
+              )}
+              {card.status !== "sold" && card.stock === 0 && (
                 <span className="text-[10.5px] font-semibold px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
                   Out of Stock
                 </span>
@@ -117,6 +134,42 @@ export default async function CardDetailPage({ params }: PageProps) {
               {card.game} · {card.set}
             </p>
 
+            {/* Spec chips */}
+            {(card.cardNumber || card.finish !== "Normal" || card.language !== "English" || card.firstEdition || card.graded) && (
+              <div className="flex flex-wrap gap-2 mb-5">
+                {card.cardNumber && (
+                  <span className="text-[11px] px-2.5 py-1 rounded-full text-white/50"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    #{card.cardNumber}
+                  </span>
+                )}
+                {card.finish && card.finish !== "Normal" && (
+                  <span className="text-[11px] px-2.5 py-1 rounded-full text-white/50"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    {card.finish}
+                  </span>
+                )}
+                {card.language && card.language !== "English" && (
+                  <span className="text-[11px] px-2.5 py-1 rounded-full text-white/50"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    {card.language}
+                  </span>
+                )}
+                {card.firstEdition && (
+                  <span className="text-[11px] px-2.5 py-1 rounded-full text-yellow-400/80"
+                    style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.2)" }}>
+                    1st Edition
+                  </span>
+                )}
+                {card.graded && card.gradingCompany && card.grade && (
+                  <span className="text-[11px] px-2.5 py-1 rounded-full text-purple-300/80"
+                    style={{ background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)" }}>
+                    {card.gradingCompany} {card.grade}
+                  </span>
+                )}
+              </div>
+            )}
+
             {card.price !== null && (
               <div className="mb-4">
                 <p className="font-black text-green-400" style={{ fontSize: 32 }}>
@@ -127,6 +180,14 @@ export default async function CardDetailPage({ params }: PageProps) {
                     Only {card.stock} available
                   </p>
                 )}
+              </div>
+            )}
+
+            {card.details && (
+              <div className="mb-6 p-4 rounded-xl"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <p className="text-xs text-white/40 uppercase tracking-wider mb-2 font-semibold">Condition Notes</p>
+                <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{card.details}</p>
               </div>
             )}
 

@@ -13,7 +13,8 @@ const CONDITION_SHORT: Record<string, string> = {
 
 export function MobileCatalogCard({ card }: { card: Card }) {
   const condLabel = CONDITION_SHORT[card.condition] ?? card.condition.slice(0, 4).toUpperCase();
-  const isSold = card.stock === 0;
+  const isSold = card.status === "sold";
+  const isReserved = card.status === "reserved";
 
   return (
     <Link href={`/cards/${card.id}`} className="block no-underline">
@@ -23,7 +24,7 @@ export function MobileCatalogCard({ card }: { card: Card }) {
           height: 240,
           background: "linear-gradient(145deg, #1a1a2e, #16213e)",
           border: "1px solid rgba(255,255,255,0.12)",
-          opacity: isSold ? 0.45 : 1,
+          opacity: isSold ? 0.45 : isReserved ? 0.75 : 1,
         }}
       >
         <Image
@@ -39,13 +40,15 @@ export function MobileCatalogCard({ card }: { card: Card }) {
             fontSize: "9.5px",
             padding: "3px 7px",
             background: "rgba(0,0,0,0.7)",
-            color: isSold ? "rgba(255,255,255,0.5)" : "#86efac",
+            color: isSold ? "rgba(255,255,255,0.5)" : isReserved ? "#fbbf24" : "#86efac",
             border: isSold
               ? "1px solid rgba(255,255,255,0.15)"
+              : isReserved
+              ? "1px solid rgba(251,191,36,0.3)"
               : "1px solid rgba(134,239,172,0.3)",
           }}
         >
-          {isSold ? "SOLD" : condLabel}
+          {isSold ? "SOLD" : isReserved ? "Reserved" : condLabel}
         </span>
         <div
           className="absolute bottom-0 left-0 right-0"
@@ -57,7 +60,7 @@ export function MobileCatalogCard({ card }: { card: Card }) {
           <div className="flex justify-between gap-1.5">
             <span
               className="text-[11px] font-bold truncate"
-              style={{ color: isSold ? "rgba(255,255,255,0.5)" : "#fff" }}
+              style={{ color: isSold ? "rgba(255,255,255,0.5)" : isReserved ? "rgba(255,255,255,0.7)" : "#fff" }}
             >
               {card.name}
             </span>
@@ -65,7 +68,7 @@ export function MobileCatalogCard({ card }: { card: Card }) {
               <span
                 className="text-[11px] font-extrabold flex-shrink-0"
                 style={{
-                  color: isSold ? "rgba(255,255,255,0.35)" : "#4ade80",
+                  color: isSold ? "rgba(255,255,255,0.35)" : isReserved ? "#fbbf24" : "#4ade80",
                   textDecoration: isSold ? "line-through" : undefined,
                 }}
               >

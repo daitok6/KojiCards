@@ -121,7 +121,14 @@ export function HoloCard({ card, size = "md", linkable = true }: HoloCardProps) 
           )}
         </div>
 
-        {card.stock === 0 && (
+        {card.status === "sold" && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-b-xl bg-black/60">
+            <span className="text-red-400 font-bold text-sm tracking-widest uppercase">
+              SOLD
+            </span>
+          </div>
+        )}
+        {card.status !== "sold" && card.stock === 0 && (
           <div className="absolute inset-0 flex items-center justify-center rounded-b-xl bg-black/60">
             <span className="text-red-400 font-bold text-sm tracking-widest uppercase">
               Out of Stock

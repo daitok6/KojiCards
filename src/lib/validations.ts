@@ -9,6 +9,29 @@ export const cardSchema = z.object({
   price: z.coerce.number().min(0).nullable().optional(),
   stock: z.coerce.number().int().min(0).default(1),
   featured: z.coerce.boolean().default(false),
+
+  // Identity fields
+  cardNumber: z.string().max(50).optional().transform(v => v === "" ? undefined : v),
+  finish: z.string().default("Normal"),
+  language: z.string().default("English"),
+
+  // Flags
+  firstEdition: z.coerce.boolean().default(false),
+  graded: z.coerce.boolean().default(false),
+
+  // Graded block (only meaningful when graded=true)
+  gradingCompany: z.string().max(50).optional().transform(v => v === "" ? undefined : v),
+  grade: z.string().max(10).optional().transform(v => v === "" ? undefined : v),
+  certNumber: z.string().max(100).optional().transform(v => v === "" ? undefined : v),
+
+  // Commerce
+  sku: z.string().max(100).optional().transform(v => v === "" ? undefined : v),
+  status: z.enum(["available", "reserved", "sold"]).default("available"),
+
+  // Descriptive
+  artist: z.string().max(200).optional().transform(v => v === "" ? undefined : v),
+  releaseYear: z.coerce.number().int().min(1990).max(2100).optional(),
+  details: z.string().max(2000).optional().transform(v => v === "" ? undefined : v),
 });
 
 export const contactSchema = z.object({
